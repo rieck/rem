@@ -35,7 +35,16 @@ go test ./...
 
 All tests must pass. Do not proceed if any test fails.
 
-## Step 3: Build Release Binaries
+## Step 3: Tag FIRST, Then Build
+
+**CRITICAL: The tag MUST be created BEFORE building.** The Makefile uses `git describe --tags` to embed the version string in the binary. If you build before tagging, the binary will report the wrong version (e.g., `v0.5.0-2-gae75da9` instead of `v0.6.0`).
+
+```bash
+git tag v<VERSION>
+git push origin v<VERSION>
+```
+
+## Step 4: Build Release Binaries
 
 ```bash
 make release
@@ -43,12 +52,13 @@ make release
 
 This produces `bin/rem-darwin-arm64.tar.gz` and `bin/rem-darwin-amd64.tar.gz`.
 
-## Step 4: Tag and Push
+**Verify the version is correct before uploading:**
 
 ```bash
-git tag v<VERSION>
-git push origin v<VERSION>
+cd /tmp && tar -xzf /path/to/bin/rem-darwin-arm64.tar.gz && ./rem version && rm ./rem
 ```
+
+The output must show `rem v<VERSION>`, not a describe-style string like `v0.X.Y-N-gHASH`.
 
 ## Step 5: Create GitHub Release
 

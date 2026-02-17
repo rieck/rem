@@ -44,6 +44,7 @@ make completions  # bash/zsh/fish
 ```
 
 ## Releasing
+- **CRITICAL: Tag BEFORE building.** The Makefile uses `git describe --tags` to embed the version. If you `make release` before `git tag`, the binary will have the wrong version (e.g., `v0.5.0-2-gae75da9` instead of `v0.6.0`). Always: tag → push tag → `make release` → verify with `./rem version` → upload.
 - **Always use `make release`** to build release binaries — produces a `.tar.gz` that preserves execute permissions (HTTP downloads strip +x from raw binaries)
 - Upload `bin/rem-darwin-arm64.tar.gz` to GitHub Releases
 - No CI release workflow — macOS runners are too expensive for free tier
