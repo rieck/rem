@@ -193,7 +193,7 @@ func resolveTargets(allTargets []skills.AgentTarget, agentFlag, homeDir, action 
 	}
 
 	// Check if stdin is a TTY — if not, auto-detect
-	if !isInteractiveSkills() {
+	if !isTTY() {
 		detected := skills.DetectAgents(allTargets)
 		if len(detected) == 0 {
 			// Default to claude
@@ -311,11 +311,3 @@ func runAgentPicker(allTargets []skills.AgentTarget, homeDir, action string) ([]
 	return targets, nil
 }
 
-// isInteractiveSkills returns true if stdin is a terminal.
-func isInteractiveSkills() bool {
-	fi, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-	return fi.Mode()&os.ModeCharDevice != 0
-}

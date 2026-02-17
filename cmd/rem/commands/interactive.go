@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/BRO3886/rem/internal/parser"
 	"github.com/BRO3886/rem/internal/reminder"
+	"github.com/BRO3886/rem/internal/ui"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +17,9 @@ var interactiveCmd = &cobra.Command{
 	Short:   "Interactive reminder management",
 	Long:    `Launch an interactive session for creating and managing reminders.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireInteractive(); err != nil {
+			return err
+		}
 		return runInteractiveMenu()
 	},
 }
@@ -26,164 +29,143 @@ func init() {
 }
 
 func runInteractiveMenu() error {
-	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Println("\n--- rem interactive ---")
-		fmt.Println("1) Create a reminder")
-		fmt.Println("2) List reminders")
-		fmt.Println("3) Complete a reminder")
-		fmt.Println("4) Delete a reminder")
-		fmt.Println("5) List all lists")
-		fmt.Println("6) Create a list")
-		fmt.Println("q) Quit")
-		fmt.Print("\nChoice: ")
+		var choice string
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewSelect[string]().
+					Title("rem interactive").
+					Options(
+						huh.NewOption("Create a reminder", "create"),
+						huh.NewOption("List reminders", "list"),
+						huh.NewOption("Complete reminders", "complete"),
+						huh.NewOption("Delete reminders", "delete"),
+						huh.NewOption("Flag/unflag reminders", "flag"),
+						huh.NewOption("Manage lists", "lists"),
+						huh.NewOption("Quit", "quit"),
+					).
+					Value(&choice),
+			),
+		).WithTheme(huhTheme())
 
-		choice, _ := reader.ReadString('\n')
-		choice = strings.TrimSpace(choice)
+		if err := form.Run(); err != nil {
+			if err == huh.ErrUserAborted {
+				fmt.Println("Bye!")
+				return nil
+			}
+			return err
+		}
 
+		var err error
 		switch choice {
-		case "1":
-			if err := runAddInteractive(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			}
-		case "2":
-			reminders, err := reminderSvc.ListReminders(&reminder.ListFilter{})
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			for i, r := range reminders {
-				status := "[ ]"
-				if r.Completed {
-					status = "[x]"
-				}
-				dueStr := ""
-				if r.DueDate != nil {
-					dueStr = " (due: " + r.DueDate.Format("Jan 02, 15:04") + ")"
-				}
-				fmt.Printf("  %d. %s %s%s [%s]\n", i+1, status, r.Name, dueStr, r.ListName)
-			}
-		case "3":
-			fmt.Print("Reminder ID (or prefix): ")
-			id, _ := reader.ReadString('\n')
-			id = strings.TrimSpace(id)
-			r, err := findReminderByID(id)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			if err := reminderSvc.CompleteReminder(r.ID); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			fmt.Printf("Completed: %s\n", r.Name)
-		case "4":
-			fmt.Print("Reminder ID (or prefix): ")
-			id, _ := reader.ReadString('\n')
-			id = strings.TrimSpace(id)
-			r, err := findReminderByID(id)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			fmt.Printf("Delete '%s'? (y/N): ", r.Name)
-			confirm, _ := reader.ReadString('\n')
-			if strings.TrimSpace(strings.ToLower(confirm)) == "y" {
-				if err := reminderSvc.DeleteReminder(r.ID); err != nil {
-					fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-					continue
-				}
-				fmt.Printf("Deleted: %s\n", r.Name)
-			}
-		case "5":
-			lists, err := listSvc.GetLists()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			for _, l := range lists {
-				fmt.Printf("  - %s (%d reminders)\n", l.Name, l.Count)
-			}
-		case "6":
-			fmt.Print("List name: ")
-			name, _ := reader.ReadString('\n')
-			name = strings.TrimSpace(name)
-			if name == "" {
-				fmt.Println("Name cannot be empty.")
-				continue
-			}
-			list, err := listSvc.CreateList(name)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				continue
-			}
-			fmt.Printf("Created list: %s\n", list.Name)
-		case "q", "Q", "quit", "exit":
+		case "create":
+			err = runAddInteractive()
+		case "list":
+			err = runListInteractive()
+		case "complete":
+			err = runCompleteInteractive(false)
+		case "delete":
+			err = runDeleteInteractive()
+		case "flag":
+			err = runFlagMenuInteractive()
+		case "lists":
+			err = runListMgmtMenuInteractive()
+		case "quit":
 			fmt.Println("Bye!")
 			return nil
-		default:
-			fmt.Println("Invalid choice.")
+		}
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		}
 	}
 }
 
-func runAddInteractive() error {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print("Title: ")
-	title, _ := reader.ReadString('\n')
-	title = strings.TrimSpace(title)
-	if title == "" {
-		return fmt.Errorf("title is required")
+func runListInteractive() error {
+	reminders, err := reminderSvc.ListReminders(&reminder.ListFilter{})
+	if err != nil {
+		return err
 	}
+	format := ui.ParseOutputFormat(outputFormat)
+	ui.PrintReminders(os.Stdout, reminders, format)
+	return nil
+}
 
-	// Get available lists
+func runAddInteractive() error {
 	lists, err := listSvc.GetLists()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Available lists:")
-	for i, l := range lists {
-		fmt.Printf("  %d. %s\n", i+1, l.Name)
-	}
-	fmt.Print("Choose list (number or name, Enter for default): ")
-	listChoice, _ := reader.ReadString('\n')
-	listChoice = strings.TrimSpace(listChoice)
-
-	listName := ""
-	if listChoice != "" {
-		// Try as number first
-		for i, l := range lists {
-			if fmt.Sprintf("%d", i+1) == listChoice {
-				listName = l.Name
-				break
-			}
-		}
-		if listName == "" {
-			listName = listChoice
-		}
+	listOptions := make([]huh.Option[string], 0, len(lists)+1)
+	listOptions = append(listOptions, huh.NewOption("Default", ""))
+	for _, l := range lists {
+		listOptions = append(listOptions, huh.NewOption(l.Name, l.Name))
 	}
 
-	fmt.Print("Notes (optional): ")
-	notes, _ := reader.ReadString('\n')
-	notes = strings.TrimSpace(notes)
+	priorityOptions := []huh.Option[string]{
+		huh.NewOption("None", "none"),
+		huh.NewOption("Low", "low"),
+		huh.NewOption("Medium", "medium"),
+		huh.NewOption("High", "high"),
+	}
 
-	fmt.Print("Due date (e.g., 'tomorrow', 'next friday at 2pm', Enter to skip): ")
-	dueStr, _ := reader.ReadString('\n')
-	dueStr = strings.TrimSpace(dueStr)
+	var (
+		title       string
+		notes       string
+		dueStr      string
+		listName    string
+		priorityStr string
+		url         string
+		flagged     bool
+	)
 
-	fmt.Print("Priority (high/medium/low/none, Enter for none): ")
-	priorityStr, _ := reader.ReadString('\n')
-	priorityStr = strings.TrimSpace(priorityStr)
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Title").
+				Value(&title).
+				Validate(func(s string) error {
+					if s == "" {
+						return fmt.Errorf("title is required")
+					}
+					return nil
+				}),
+			huh.NewSelect[string]().
+				Title("List").
+				Options(listOptions...).
+				Value(&listName),
+			huh.NewInput().
+				Title("Notes").
+				Description("Optional").
+				Value(&notes),
+			huh.NewInput().
+				Title("Due date").
+				Description("e.g., 'tomorrow', 'next friday at 2pm' (optional)").
+				Value(&dueStr),
+			huh.NewSelect[string]().
+				Title("Priority").
+				Options(priorityOptions...).
+				Value(&priorityStr),
+			huh.NewInput().
+				Title("URL").
+				Description("Optional").
+				Value(&url),
+			huh.NewConfirm().
+				Title("Flagged?").
+				Affirmative("Yes").
+				Negative("No").
+				Value(&flagged),
+		),
+	).WithTheme(huhTheme())
 
-	fmt.Print("URL (optional): ")
-	url, _ := reader.ReadString('\n')
-	url = strings.TrimSpace(url)
-
-	fmt.Print("Flagged? (y/N): ")
-	flaggedStr, _ := reader.ReadString('\n')
-	flagged := strings.TrimSpace(strings.ToLower(flaggedStr)) == "y"
+	if err := form.Run(); err != nil {
+		if err == huh.ErrUserAborted {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+		return err
+	}
 
 	r := &reminder.Reminder{
 		Name:     title,
@@ -209,5 +191,70 @@ func runAddInteractive() error {
 	}
 
 	fmt.Printf("Created reminder: %s (ID: %s)\n", r.Name, shortIDStr(id))
+	return nil
+}
+
+func runFlagMenuInteractive() error {
+	var action string
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("Flag action").
+				Options(
+					huh.NewOption("Flag reminders", "flag"),
+					huh.NewOption("Unflag reminders", "unflag"),
+				).
+				Value(&action),
+		),
+	).WithTheme(huhTheme())
+
+	if err := form.Run(); err != nil {
+		if err == huh.ErrUserAborted {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+		return err
+	}
+
+	switch action {
+	case "flag":
+		return runFlagInteractive("")
+	case "unflag":
+		return runUnflagInteractive("")
+	}
+	return nil
+}
+
+func runListMgmtMenuInteractive() error {
+	var action string
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("List management").
+				Options(
+					huh.NewOption("Create a list", "create"),
+					huh.NewOption("Rename a list", "rename"),
+					huh.NewOption("Delete a list", "delete"),
+				).
+				Value(&action),
+		),
+	).WithTheme(huhTheme())
+
+	if err := form.Run(); err != nil {
+		if err == huh.ErrUserAborted {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+		return err
+	}
+
+	switch action {
+	case "create":
+		return runListCreateInteractive()
+	case "rename":
+		return runListRenameInteractive()
+	case "delete":
+		return runListDeleteInteractive("")
+	}
 	return nil
 }

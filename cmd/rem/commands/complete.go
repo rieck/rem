@@ -3,7 +3,17 @@ package commands
 import (
 	"fmt"
 
+	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/spf13/cobra"
+)
+
+var (
+	completeInteractive bool
+	completeList        string
+	completeFlagged     bool
+
+	uncompleteInteractive bool
+	uncompleteList        string
 )
 
 var completeCmd = &cobra.Command{
@@ -11,9 +21,20 @@ var completeCmd = &cobra.Command{
 	Aliases: []string{"done"},
 	Short:   "Mark a reminder as complete",
 	Example: `  rem complete abc12345
-  rem done abc12345`,
-	Args: cobra.ExactArgs(1),
+  rem done abc12345
+  rem complete -i
+  rem complete -i --list Work --flagged`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if completeInteractive {
+			return cobra.MaximumNArgs(0)(cmd, args)
+		}
+		return cobra.ExactArgs(1)(cmd, args)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if completeInteractive {
+			return runCompleteInteractive(false)
+		}
+
 		r, err := findReminderByID(args[0])
 		if err != nil {
 			return err
@@ -31,8 +52,20 @@ var completeCmd = &cobra.Command{
 var uncompleteCmd = &cobra.Command{
 	Use:   "uncomplete [id]",
 	Short: "Mark a reminder as incomplete",
-	Args:  cobra.ExactArgs(1),
+	Example: `  rem uncomplete abc12345
+  rem uncomplete -i
+  rem uncomplete -i --list Work`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if uncompleteInteractive {
+			return cobra.MaximumNArgs(0)(cmd, args)
+		}
+		return cobra.ExactArgs(1)(cmd, args)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if uncompleteInteractive {
+			return runCompleteInteractive(true)
+		}
+
 		r, err := findReminderByID(args[0])
 		if err != nil {
 			return err
@@ -48,6 +81,79 @@ var uncompleteCmd = &cobra.Command{
 }
 
 func init() {
+	completeCmd.Flags().BoolVarP(&completeInteractive, "interactive", "i", false, "Select reminders interactively")
+	completeCmd.Flags().StringVarP(&completeList, "list", "l", "", "Filter by list name")
+	completeCmd.Flags().BoolVar(&completeFlagged, "flagged", false, "Filter to flagged reminders only")
 	rootCmd.AddCommand(completeCmd)
+
+	uncompleteCmd.Flags().BoolVarP(&uncompleteInteractive, "interactive", "i", false, "Select reminders interactively")
+	uncompleteCmd.Flags().StringVarP(&uncompleteList, "list", "l", "", "Filter by list name")
 	rootCmd.AddCommand(uncompleteCmd)
+}
+
+// runCompleteInteractive runs the interactive multi-select flow for completing or uncompleting reminders.
+// If uncomplete is true, shows completed reminders and marks them incomplete.
+func runCompleteInteractive(uncomplete bool) error {
+	if err := requireInteractive(); err != nil {
+		return err
+	}
+
+	completed := !uncomplete
+	filter := &reminder.ListFilter{
+		Completed: &completed,
+	}
+
+	// Apply list filter
+	listName := completeList
+	if uncomplete {
+		listName = uncompleteList
+	}
+	if listName != "" {
+		filter.ListName = listName
+	}
+
+	// Apply flagged filter (complete only)
+	if !uncomplete && completeFlagged {
+		flagged := true
+		filter.Flagged = &flagged
+	}
+
+	reminders, err := reminderSvc.ListReminders(filter)
+	if err != nil {
+		return err
+	}
+
+	title := "Select reminders to complete"
+	if uncomplete {
+		title = "Select reminders to mark incomplete"
+	}
+
+	selected, err := reminderMultiSelect(title, reminders)
+	if err != nil {
+		return err
+	}
+	if selected == nil {
+		return nil // cancelled
+	}
+
+	for _, id := range selected {
+		if uncomplete {
+			if err := reminderSvc.UncompleteReminder(id); err != nil {
+				fmt.Printf("Error uncompleting %s: %v\n", shortIDStr(id), err)
+				continue
+			}
+		} else {
+			if err := reminderSvc.CompleteReminder(id); err != nil {
+				fmt.Printf("Error completing %s: %v\n", shortIDStr(id), err)
+				continue
+			}
+		}
+	}
+
+	action := "Completed"
+	if uncomplete {
+		action = "Marked incomplete"
+	}
+	fmt.Printf("%s %d reminder(s)\n", action, len(selected))
+	return nil
 }

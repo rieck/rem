@@ -5,16 +5,17 @@ import (
 
 	"github.com/BRO3886/rem/internal/parser"
 	"github.com/BRO3886/rem/internal/reminder"
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
 
 var (
-	updateName     string
-	updateNotes    string
-	updateDue      string
-	updatePriority string
-	updateURL      string
-	updateFlagged  string
+	updateName        string
+	updateNotes       string
+	updateDue         string
+	updatePriority    string
+	updateURL         string
+	updateFlagged     string
 	updateInteractive bool
 )
 
@@ -25,9 +26,24 @@ var updateCmd = &cobra.Command{
 	Long:    `Update properties of an existing reminder by its ID.`,
 	Example: `  rem update abc12345 --due "next monday"
   rem update abc12345 --notes "Updated notes" --priority medium
-  rem edit abc12345 --name "New title"`,
-	Args: cobra.ExactArgs(1),
+  rem edit abc12345 --name "New title"
+  rem update -i
+  rem update -i abc12345`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if updateInteractive {
+			return cobra.RangeArgs(0, 1)(cmd, args)
+		}
+		return cobra.ExactArgs(1)(cmd, args)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if updateInteractive {
+			var id string
+			if len(args) > 0 {
+				id = args[0]
+			}
+			return runUpdateInteractive(id)
+		}
+
 		id := args[0]
 
 		r, err := findReminderByID(id)
@@ -97,4 +113,193 @@ func init() {
 	updateCmd.Flags().BoolVarP(&updateInteractive, "interactive", "i", false, "Update interactively")
 
 	rootCmd.AddCommand(updateCmd)
+}
+
+// runUpdateInteractive runs the interactive update form.
+func runUpdateInteractive(idArg string) error {
+	if err := requireInteractive(); err != nil {
+		return err
+	}
+
+	var r *reminder.Reminder
+
+	if idArg != "" {
+		var err error
+		r, err = findReminderByID(idArg)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Pick a reminder interactively
+		incomplete := false
+		reminders, err := reminderSvc.ListReminders(&reminder.ListFilter{
+			Completed: &incomplete,
+		})
+		if err != nil {
+			return err
+		}
+
+		selectedID, err := reminderSelect("Select reminder to update", reminders)
+		if err != nil {
+			return err
+		}
+		if selectedID == "" {
+			return nil // cancelled
+		}
+
+		r, err = reminderSvc.GetReminder(selectedID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Pre-populate form values from current reminder
+	name := r.Name
+	notes := r.Body
+	url := r.URL
+	dueStr := ""
+	if r.DueDate != nil {
+		dueStr = r.DueDate.Format("Jan 02, 2006 3:04 PM")
+	}
+	priorityStr := r.Priority.String()
+	flaggedStr := "no"
+	if r.Flagged {
+		flaggedStr = "yes"
+	}
+
+	// Get lists for the select
+	lists, err := listSvc.GetLists()
+	if err != nil {
+		return err
+	}
+
+	listOptions := make([]huh.Option[string], len(lists))
+	for i, l := range lists {
+		listOptions[i] = huh.NewOption(l.Name, l.Name)
+	}
+	listName := r.ListName
+
+	priorityOptions := []huh.Option[string]{
+		huh.NewOption("None", "none"),
+		huh.NewOption("Low", "low"),
+		huh.NewOption("Medium", "medium"),
+		huh.NewOption("High", "high"),
+	}
+
+	flaggedOptions := []huh.Option[string]{
+		huh.NewOption("No", "no"),
+		huh.NewOption("Yes", "yes"),
+	}
+
+	dueDescription := "e.g., 'tomorrow', 'next friday at 2pm', 'none' to clear"
+	if r.DueDate != nil {
+		dueDescription = fmt.Sprintf("Current: %s — enter new date, 'none' to clear, or leave as-is", r.DueDate.Format("Jan 02, 2006 3:04 PM"))
+	}
+
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Title").
+				Value(&name).
+				Validate(func(s string) error {
+					if s == "" {
+						return fmt.Errorf("title is required")
+					}
+					return nil
+				}),
+			huh.NewSelect[string]().
+				Title("List").
+				Options(listOptions...).
+				Value(&listName),
+			huh.NewInput().
+				Title("Notes").
+				Value(&notes),
+			huh.NewInput().
+				Title("Due date").
+				Description(dueDescription).
+				Value(&dueStr),
+			huh.NewSelect[string]().
+				Title("Priority").
+				Options(priorityOptions...).
+				Value(&priorityStr),
+			huh.NewInput().
+				Title("URL").
+				Value(&url),
+			huh.NewSelect[string]().
+				Title("Flagged").
+				Options(flaggedOptions...).
+				Value(&flaggedStr),
+		),
+	).WithTheme(huhTheme())
+
+	if err := form.Run(); err != nil {
+		if err == huh.ErrUserAborted {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+		return err
+	}
+
+	// Build updates map by comparing with original values
+	updates := make(map[string]any)
+
+	if name != r.Name {
+		updates["name"] = name
+	}
+	if notes != r.Body {
+		updates["body"] = notes
+	}
+	if url != r.URL {
+		if notes == r.Body {
+			// URL changed but notes didn't — update body with new URL
+			body := r.Body
+			if body != "" {
+				body = body + "\n\nURL: " + url
+			} else if url != "" {
+				body = "URL: " + url
+			}
+			updates["body"] = body
+		}
+		// If notes also changed, the URL will need to be in the notes
+	}
+	if listName != r.ListName {
+		updates["list"] = listName
+	}
+	if priorityStr != r.Priority.String() {
+		updates["priority"] = reminder.ParsePriority(priorityStr)
+	}
+
+	// Handle due date changes
+	newFlagged := flaggedStr == "yes"
+	origDueStr := ""
+	if r.DueDate != nil {
+		origDueStr = r.DueDate.Format("Jan 02, 2006 3:04 PM")
+	}
+	if dueStr != origDueStr {
+		if dueStr == "" || dueStr == "none" {
+			updates["due_date"] = nil
+		} else {
+			t, err := parser.ParseDate(dueStr)
+			if err != nil {
+				return fmt.Errorf("invalid due date: %w", err)
+			}
+			updates["due_date"] = t
+		}
+	}
+
+	if newFlagged != r.Flagged {
+		updates["flagged"] = newFlagged
+	}
+
+	if len(updates) == 0 {
+		fmt.Println("No changes made.")
+		return nil
+	}
+
+	if err := reminderSvc.UpdateReminder(r.ID, updates); err != nil {
+		return err
+	}
+
+	fmt.Printf("Updated reminder: %s\n", name)
+	return nil
 }
