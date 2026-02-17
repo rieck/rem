@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/spf13/cobra"
 )
 
@@ -98,27 +97,12 @@ func runCompleteInteractive(uncomplete bool) error {
 		return err
 	}
 
-	completed := !uncomplete
-	filter := &reminder.ListFilter{
-		Completed: &completed,
-	}
-
-	// Apply list filter
 	listName := completeList
 	if uncomplete {
 		listName = uncompleteList
 	}
-	if listName != "" {
-		filter.ListName = listName
-	}
 
-	// Apply flagged filter (complete only)
-	if !uncomplete && completeFlagged {
-		flagged := true
-		filter.Flagged = &flagged
-	}
-
-	reminders, err := reminderSvc.ListReminders(filter)
+	reminders, err := reminderSvc.ListReminders(completeFilter(uncomplete, listName, completeFlagged))
 	if err != nil {
 		return err
 	}

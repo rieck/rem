@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/spf13/cobra"
 )
 
@@ -75,21 +74,7 @@ func runDeleteInteractive() error {
 		return err
 	}
 
-	incomplete := false
-	filter := &reminder.ListFilter{
-		Completed: &incomplete,
-	}
-
-	if deleteList != "" {
-		filter.ListName = deleteList
-	}
-
-	if deleteFlagged {
-		flagged := true
-		filter.Flagged = &flagged
-	}
-
-	reminders, err := reminderSvc.ListReminders(filter)
+	reminders, err := reminderSvc.ListReminders(deleteFilter(deleteList, deleteFlagged))
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/spf13/cobra"
 )
 
@@ -93,15 +92,7 @@ func runFlagInteractive(listName string) error {
 		return err
 	}
 
-	incomplete := false
-	filter := &reminder.ListFilter{
-		Completed: &incomplete,
-	}
-	if listName != "" {
-		filter.ListName = listName
-	}
-
-	reminders, err := reminderSvc.ListReminders(filter)
+	reminders, err := reminderSvc.ListReminders(flagFilter(listName))
 	if err != nil {
 		return err
 	}
@@ -131,17 +122,7 @@ func runUnflagInteractive(listName string) error {
 		return err
 	}
 
-	flagged := true
-	incomplete := false
-	filter := &reminder.ListFilter{
-		Completed: &incomplete,
-		Flagged:   &flagged,
-	}
-	if listName != "" {
-		filter.ListName = listName
-	}
-
-	reminders, err := reminderSvc.ListReminders(filter)
+	reminders, err := reminderSvc.ListReminders(unflagFilter(listName))
 	if err != nil {
 		return err
 	}
