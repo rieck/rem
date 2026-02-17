@@ -260,6 +260,42 @@ The menu includes:
 
 You can also use `-i` with `add` and `update` for interactive field entry.
 
+## Skills
+
+### `rem skills install`
+
+Install the rem agent skill for AI coding agents.
+
+```bash
+rem skills install                # Interactive picker
+rem skills install --agent claude # Claude Code only
+rem skills install --agent all    # All agents
+```
+
+| Flag | Description |
+|------|-------------|
+| `--agent` | Target agent: `claude`, `codex`, or `all` (default: interactive picker) |
+
+### `rem skills uninstall`
+
+Remove the rem agent skill.
+
+```bash
+rem skills uninstall --agent claude
+```
+
+| Flag | Description |
+|------|-------------|
+| `--agent` | Target agent: `claude`, `codex`, or `all` (default: interactive picker) |
+
+### `rem skills status`
+
+Show skill installation status across all supported agents.
+
+```bash
+rem skills status
+```
+
 ## Date Formats
 
 rem's built-in parser understands these patterns:

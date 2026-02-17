@@ -12,7 +12,10 @@ Go CLI wrapping macOS Reminders. Uses `go-eventkit` (cgo + Objective-C EventKit)
 - `internal/reminder/` - Domain models: `Reminder`, `List`, `Priority`
 - `internal/parser/` - Custom NL date parser (no external deps)
 - `internal/export/` - JSON/CSV import/export
+- `internal/skills/` - Agent skill install/uninstall/status logic
+- `internal/update/` - Background update check (GitHub releases, 24h cache)
 - `internal/ui/` - Table (`olekukonko/tablewriter` v1.x), plain, JSON output
+- `skills/rem-cli/` - Embedded agent skill files (go:embed'd into binary)
 
 ## Critical: Architecture Rules
 - **ALL reads AND writes go through `go-eventkit`** (`github.com/BRO3886/go-eventkit/reminders`) — in-process EventKit via cgo, <200ms
@@ -30,6 +33,7 @@ Go CLI wrapping macOS Reminders. Uses `go-eventkit` (cgo + Objective-C EventKit)
 - `olekukonko/tablewriter` v1.x - **new API**: `NewTable()`, `.Header()`, `.Append()`, `.Render()` (NOT the old `SetHeader`/`SetBorder` API)
 - `fatih/color` - terminal colors
 - `olekukonko/tablewriter/tw` - alignment constants (`tw.AlignLeft`)
+- `charmbracelet/huh` - interactive multi-select for skills install/uninstall
 
 ## Build & Test
 ```bash
@@ -43,6 +47,13 @@ make completions  # bash/zsh/fish
 - **Always use `make release`** to build release binaries — produces a `.tar.gz` that preserves execute permissions (HTTP downloads strip +x from raw binaries)
 - Upload `bin/rem-darwin-arm64.tar.gz` to GitHub Releases
 - No CI release workflow — macOS runners are too expensive for free tier
+
+## Agent Skills
+- `rem skills install/uninstall/status` manages embedded agent skill files
+- Skills are `go:embed`'d from `skills/rem-cli/` into the binary
+- `internal/skills/` handles install/uninstall logic, `internal/update/` handles background update checks
+- Background update check runs in a goroutine during `PersistentPreRun`, prints notice in `PersistentPostRun`
+- `REM_NO_UPDATE_CHECK=1` disables update checks; also skipped for dev builds, json output, non-TTY, meta commands
 
 ## Conventions
 - Short IDs displayed as first 8 chars of full `x-apple-reminder://UUID` ID

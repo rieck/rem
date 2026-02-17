@@ -344,6 +344,55 @@ rem completion fish > ~/.config/fish/completions/rem.fish
 
 ---
 
+## rem skills install
+
+Install the rem agent skill for AI coding agents.
+
+```bash
+rem skills install                # Interactive picker
+rem skills install --agent claude # Install for Claude Code only
+rem skills install --agent codex  # Install for Codex CLI only
+rem skills install --agent all    # Install for all agents
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--agent` | Agent target: claude, codex, or all | Interactive picker |
+
+Supported targets:
+- `claude` → `~/.claude/skills/rem-cli/` (Claude Code, Copilot, Cursor, OpenCode, Augment)
+- `codex` → `~/.agents/skills/rem-cli/` (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+
+---
+
+## rem skills uninstall
+
+Remove the rem agent skill from AI coding agents.
+
+```bash
+rem skills uninstall                # Interactive picker
+rem skills uninstall --agent claude # Uninstall from Claude Code only
+rem skills uninstall --agent all    # Uninstall from all agents
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--agent` | Agent target: claude, codex, or all | Interactive picker |
+
+---
+
+## rem skills status
+
+Show the installation status of the rem skill across all supported agents.
+
+```bash
+rem skills status
+```
+
+Displays installed version, location, and whether the skill is outdated compared to the binary.
+
+---
+
 ## rem version
 
 Print version information.
@@ -358,4 +407,5 @@ rem version
 
 - All read commands accept `-o` / `--output` for format selection (table, json, plain)
 - `NO_COLOR=1` environment variable disables color output
+- `REM_NO_UPDATE_CHECK=1` environment variable disables the background update check
 - ID arguments accept prefix matches — pass any unique prefix of a short ID

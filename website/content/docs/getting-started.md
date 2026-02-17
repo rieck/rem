@@ -107,6 +107,29 @@ rem completion zsh > "${fpath[1]}/_rem"
 rem completion fish > ~/.config/fish/completions/rem.fish
 ```
 
+## AI Agent Skills
+
+rem ships with an embedded skill that teaches AI coding agents (Claude Code, Codex CLI, etc.) how to use it effectively. Install it with:
+
+```bash
+rem skills install
+```
+
+This copies the skill files to the agent's skill directory (e.g. `~/.claude/skills/rem-cli/`). The skill includes command references, date parsing docs, and usage examples.
+
+```bash
+rem skills status      # Check installation status
+rem skills uninstall   # Remove the skill
+```
+
+You can also target specific agents:
+
+```bash
+rem skills install --agent claude   # Claude Code only
+rem skills install --agent codex    # Codex CLI only
+rem skills install --agent all      # All supported agents
+```
+
 ## What's next
 
 - [Commands](/docs/commands/) — Full reference for all 19 commands

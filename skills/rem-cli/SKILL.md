@@ -87,10 +87,13 @@ rem stats
 | `rem export` | Export to JSON or CSV |
 | `rem import <file>` | Import from JSON or CSV file |
 
-### Other
+### Skills & Other
 
 | Command | Description |
 |---------|-------------|
+| `rem skills install` | Install rem skill for AI agents |
+| `rem skills uninstall` | Uninstall rem skill from AI agents |
+| `rem skills status` | Show skill installation status |
 | `rem interactive` / `rem i` | Interactive menu-driven mode |
 | `rem version` | Print version |
 | `rem completion` | Generate shell completions (bash/zsh/fish) |

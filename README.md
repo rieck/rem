@@ -190,6 +190,16 @@ NO_COLOR=1 rem list
 rem list --no-color
 ```
 
+### AI Agent Skills
+
+```bash
+rem skills install                 # Interactive picker
+rem skills install --agent claude  # Claude Code only
+rem skills install --agent all     # All supported agents
+rem skills status                  # Check installation status
+rem skills uninstall               # Remove the skill
+```
+
 ### Shell Completions
 
 ```bash
@@ -294,7 +304,10 @@ rem/
 │   ├── reminder/         # Domain models (Reminder, List, Priority)
 │   ├── parser/           # Natural language date parsing
 │   ├── export/           # JSON & CSV import/export
+│   ├── skills/           # Agent skill install/uninstall/status
+│   ├── update/           # Background update check (GitHub releases)
 │   └── ui/               # Table formatting, colored output
+├── skills/rem-cli/       # Embedded agent skill files
 ├── website/              # Hugo documentation site
 ├── Makefile
 ├── LICENSE
