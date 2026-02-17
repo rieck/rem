@@ -7,7 +7,7 @@
 Go CLI wrapping macOS Reminders. Uses `go-eventkit` (cgo + Objective-C EventKit) for fast reads AND writes (<200ms) as a single binary — including reminder CRUD and list CRUD. AppleScript only for flagged operations and default list name query. Provides CRUD for reminders/lists, natural language dates, and import/export. For programmatic Go access, use `go-eventkit` directly.
 
 ## Architecture
-- `cmd/rem/commands/` - Cobra CLI commands (one file per command)
+- `cmd/rem/commands/` - Cobra CLI commands (one file per command); `huh_helpers.go` has shared interactive utilities
 - `internal/service/` - Service layer: `reminders.go` and `lists.go` wrap `go-eventkit` client. `executor.go` runs `osascript` for flagged operations and default list name query only.
 - `internal/reminder/` - Domain models: `Reminder`, `List`, `Priority`
 - `internal/parser/` - Custom NL date parser (no external deps)
@@ -33,7 +33,7 @@ Go CLI wrapping macOS Reminders. Uses `go-eventkit` (cgo + Objective-C EventKit)
 - `olekukonko/tablewriter` v1.x - **new API**: `NewTable()`, `.Header()`, `.Append()`, `.Render()` (NOT the old `SetHeader`/`SetBorder` API)
 - `fatih/color` - terminal colors
 - `olekukonko/tablewriter/tw` - alignment constants (`tw.AlignLeft`)
-- `charmbracelet/huh` - interactive multi-select for skills install/uninstall
+- `charmbracelet/huh` - interactive forms (multi-select, select, input, confirm) for all `-i` modes and skills
 
 ## Build & Test
 ```bash
@@ -60,6 +60,7 @@ make completions  # bash/zsh/fish
 - Prefix matching: users can pass partial IDs to any command
 - All commands support `-o json|table|plain`
 - `NO_COLOR` env var respected
+- **Interactive mode (`-i`)**: All mutation commands (add, complete, delete, flag, unflag, update, list-mgmt create/rename/delete) support `-i` for huh-based interactive forms. Shared helpers in `huh_helpers.go`. Theme: `ThemeCatppuccin()`. All handle `ErrUserAborted` gracefully.
 
 ## Website & Hosting
 - Documentation site: `rem.sidv.dev` (Hugo on Cloudflare Pages)
