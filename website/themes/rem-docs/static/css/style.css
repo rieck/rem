@@ -335,6 +335,11 @@ code {
   margin: 0 auto 2rem;
 }
 
+.hero-agents {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
 .hero-link {
   color: var(--accent);
   text-decoration: none;
@@ -533,6 +538,14 @@ code {
   border-color: var(--border-strong);
 }
 
+.feature-card-highlight {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.feature-card-highlight:hover {
+  border-color: var(--accent-hover);
+}
+
 .feature-icon {
   width: 40px;
   height: 40px;
@@ -642,6 +655,126 @@ code {
   text-decoration: none;
 }
 .faq-answer a:hover { text-decoration: underline; }
+
+/* --- Agent Section --- */
+.agent-section {
+  padding: 4rem 2rem;
+  background: var(--bg-secondary);
+}
+.agent-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.agent-demo {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.agent-step {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+.agent-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+.agent-step-body {
+  flex: 1;
+  min-width: 0;
+}
+.agent-step-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+.agent-step-note {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  margin-top: 0.5rem;
+}
+.agent-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.agent-msg {
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.agent-msg-user {
+  background: var(--accent);
+  color: #fff;
+  align-self: flex-end;
+  max-width: 85%;
+  border-bottom-right-radius: 3px;
+}
+.agent-msg-agent {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  align-self: flex-start;
+  max-width: 100%;
+  border-bottom-left-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.agent-msg-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.agent-msg-agent code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--accent);
+  background: var(--inline-code-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  word-break: break-all;
+}
+.agent-msg-result {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+.agent-targets {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+.agent-target-label {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+.agent-badge {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid rgba(0, 113, 227, 0.2);
+}
 
 /* --- Install Section --- */
 .install-section {

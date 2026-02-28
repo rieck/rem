@@ -110,6 +110,10 @@
         'ID        List     Name             Due         Priority\n6ECEA745  Work     Ship v2.0        Fri Feb 13  High\nE24435D3  Work     Review PRs       Thu Feb 12  Medium\nA1B2C3D4  Home     Buy groceries    Today       None',
     },
     {
+      cmd: 'rem skills install --agent claude',
+      output: 'Installed rem-cli skill for Claude Code\n→ ~/.claude/skills/rem-cli/SKILL.md\n→ ~/.claude/skills/rem-cli/references/',
+    },
+    {
       cmd: 'rem complete 6ECE',
       output: 'Completed: Ship v2.0',
     },
