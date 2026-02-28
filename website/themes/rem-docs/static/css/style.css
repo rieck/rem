@@ -340,6 +340,57 @@ code {
   font-weight: 500;
 }
 
+.hero-chips {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 auto 2rem;
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-secondary);
+  font-size: 0.8125rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-chip-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.hero-chip-stat {
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.hero-chip-label {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.hero-chip-divider {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .hero-chip-divider { display: none; }
+  .hero-chips { gap: 0.4rem; }
+}
+
 .hero-link {
   color: var(--accent);
   text-decoration: none;
