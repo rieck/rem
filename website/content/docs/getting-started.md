@@ -1,7 +1,17 @@
 ---
 title: "Getting Started"
-description: "Install rem and start managing your macOS Reminders from the terminal in under a minute."
+description: "Install rem — a CLI for macOS Reminders — and start managing your reminders from the terminal in under a minute. Covers install script, go install, shell completions, and AI agent skills."
+keywords:
+  - install rem CLI
+  - macOS Reminders terminal setup
+  - rem install script
+  - rem go install
+  - rem shell completions
+  - rem AI agent skills
 weight: 1
+sitemap:
+  priority: 0.9
+  changefreq: weekly
 ---
 
 ## Requirements

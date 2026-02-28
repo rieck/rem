@@ -1,0 +1,157 @@
+# rem — CLI for macOS Reminders
+
+rem is an open-source command-line interface for macOS Reminders, written in Go. It uses go-eventkit (github.com/BRO3886/go-eventkit) to bridge Apple's EventKit framework directly into the Go binary via cgo and Objective-C, achieving sub-200ms reads and writes for all operations. This is 462x faster than the AppleScript/JXA approach (which takes 60+ seconds for large lists due to Apple Event IPC overhead).
+
+- GitHub: https://github.com/BRO3886/rem
+- Website: https://rem.sidv.dev/
+- Install: curl -fsSL https://rem.sidv.dev/install | bash
+- Go module: github.com/BRO3886/rem
+- License: MIT
+- Author: Siddharth Verma (https://sidv.dev)
+- macOS only (requires macOS 10.12+, EventKit framework)
+
+
+## Installation
+
+### Recommended (install script)
+curl -fsSL https://rem.sidv.dev/install | bash
+
+### Go install (requires Go + Xcode CLT)
+go install github.com/BRO3886/rem/cmd/rem@latest
+
+### Manual (from GitHub Releases)
+curl -LO https://github.com/BRO3886/rem/releases/latest/download/rem-darwin-arm64.tar.gz
+tar xzf rem-darwin-arm64.tar.gz
+sudo mv rem /usr/local/bin/rem
+# Use rem-darwin-amd64.tar.gz for Intel Macs
+
+
+## Commands (all 19)
+
+rem add "title" [--due DATE] [--priority high|medium|low|none] [--list NAME] [--notes TEXT] [--url URL] [--flagged] [-i]
+rem list [--list NAME] [--incomplete] [--completed] [--flagged] [--due-before DATE] [--due-after DATE] [-s QUERY]
+rem show ID
+rem update ID [--name TEXT] [--due DATE] [--priority LEVEL] [--notes TEXT] [--url URL] [--flagged true|false] [-i]
+rem complete ID
+rem uncomplete ID
+rem flag ID
+rem unflag ID
+rem delete ID [--force]
+rem search QUERY [--list NAME] [--incomplete]
+rem stats
+rem overdue
+rem upcoming [--days N]
+rem lists [--count]
+rem list-mgmt create NAME
+rem list-mgmt rename OLD NEW
+rem list-mgmt delete NAME [--force]
+rem export [--list NAME] [--format json|csv] [--output-file PATH] [--incomplete]
+rem import FILE [--list NAME] [--dry-run]
+rem interactive  (alias: rem i)
+rem skills install [--agent claude|codex|openclaw|all]
+rem skills uninstall [--agent claude|codex|openclaw|all]
+rem skills status
+rem version
+
+Global flags: -o table|json|plain, --no-color, -h
+
+
+## Natural Language Date Formats
+
+rem understands these date patterns (used with --due and --remind):
+- Relative: "in 2 days", "in 3 hours", "in 30 minutes"
+- Named: "today", "tomorrow", "yesterday"
+- Day of week: "next monday", "next friday"
+- Special: "eod" (5pm today), "eow" (Friday 5pm), "next week", "next month"
+- Compound: "next friday at 2pm", "tomorrow at 3:30pm"
+- Time only: "5pm", "17:00", "3:30pm"
+- ISO 8601: "2026-02-15", "2026-02-15T14:30:00"
+- US format: "02/15/2026", "2/15"
+- Named month: "Feb 15", "February 15, 2026"
+
+
+## Architecture
+
+rem uses go-eventkit (github.com/BRO3886/go-eventkit v0.2.1) for ALL reads and writes:
+- Reminder CRUD: create, read, update, delete, complete/uncomplete via EventKit
+- List CRUD: create, rename, delete via EventKit
+- Performance: <200ms for all EventKit operations
+- AppleScript fallback only for: flag/unflag operations, default list name query (EventKit doesn't expose isFlagged)
+
+Stack:
+- cmd/rem/commands/ — Cobra CLI commands
+- internal/service/ — Service layer wrapping go-eventkit
+- internal/reminder/ — Domain models (Reminder, List, Priority)
+- internal/parser/ — Custom natural language date parser (no external deps)
+- internal/export/ — JSON/CSV import/export
+- internal/skills/ — Agent skill install/uninstall/status
+- internal/update/ — Background update check (GitHub releases, 24h cache)
+
+
+## Performance Benchmarks (224 reminders, 12 lists)
+
+rem list (all 224): 0.13s  (vs ~60s with JXA — 462x faster)
+rem list --incomplete: 0.11s
+rem search "query": 0.11s  (vs ~60s with JXA — 545x faster)
+rem stats: 0.17s  (vs ~68s with JXA — 400x faster)
+rem lists: 0.12s  (vs 8.3s with JXA — 69x faster)
+rem show (prefix): 0.11s
+rem export --format json: 0.12s
+
+EventKit is an in-process framework (direct SQLite access, no IPC).
+AppleScript/JXA sends Apple Events over Mach IPC — one event per property per reminder.
+
+
+## AI Agent Skills
+
+rem ships with an embedded agent skill that teaches AI coding assistants how to use it:
+
+rem skills install                  # Interactive picker (Claude, Codex, OpenClaw)
+rem skills install --agent claude   # Claude Code only (~/.claude/skills/rem-cli/)
+rem skills install --agent codex    # Codex CLI only (~/.agents/skills/rem-cli/)
+rem skills install --agent openclaw # OpenClaw only (~/.openclaw/skills/rem-cli/)
+rem skills install --agent all      # All supported agents
+rem skills status                   # Show installation status
+rem skills uninstall --agent all    # Remove skills
+
+
+## Output Formats
+
+Every command supports three output formats:
+-o table   (default) — colored ASCII table
+-o json    — machine-readable JSON, suitable for piping to jq
+-o plain   — one result per line, for shell scripting
+
+Environment: NO_COLOR=1 disables colors. REM_NO_UPDATE_CHECK=1 disables background update checks.
+
+
+## Examples
+
+# Add a reminder with natural language date
+rem add "Ship v2.0" --due friday --priority high --list Work
+
+# List all incomplete reminders
+rem list --incomplete
+
+# Complete a reminder by short ID
+rem complete 6ECE
+
+# Search across all lists
+rem search "quarterly review" --incomplete
+
+# Export all Work reminders to JSON
+rem export --list Work --format json --output-file work.json
+
+# Import from CSV
+rem import tasks.csv --list Imported --dry-run
+
+# Interactive add
+rem add -i
+
+# View stats
+rem stats
+
+# Manage lists
+rem lm create "Projects"
+rem lm rename "Projects" "Active Projects"
+rem lists --count

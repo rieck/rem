@@ -1,7 +1,17 @@
 ---
 title: "Performance"
-description: "How rem went from 60 seconds to 130 milliseconds — the optimization journey from JXA to EventKit via cgo."
+description: "rem reads and writes macOS Reminders in under 200ms — a 462x improvement over JXA/AppleScript. Full benchmark breakdown and optimization story from AppleScript to EventKit via cgo."
+keywords:
+  - rem performance benchmarks
+  - macOS Reminders speed
+  - EventKit vs AppleScript speed
+  - JXA vs EventKit benchmark
+  - rem 200ms reminders
+  - fast macOS Reminders CLI
 weight: 5
+sitemap:
+  priority: 0.7
+  changefreq: monthly
 ---
 
 ## The numbers

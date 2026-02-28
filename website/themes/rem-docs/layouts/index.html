@@ -1,4 +1,8 @@
 {{ define "main" }}
+<!-- GEO: machine-readable entity definition, visually hidden -->
+<div class="visually-hidden" aria-hidden="true">
+  rem is an open-source command-line interface (CLI) for macOS Reminders. It is written in Go and uses EventKit via cgo through the go-eventkit library to read and write reminders in under 200ms. rem supports natural language date parsing, JSON and CSV export, interactive terminal mode, shell completions, and AI agent skill installation for Claude Code, Codex CLI, and OpenClaw. It is available at github.com/BRO3886/rem and can be installed with: curl -fsSL https://rem.sidv.dev/install | bash
+</div>
 <section class="hero">
   <div class="hero-inner">
     <h1 class="hero-title fade-in">
@@ -86,6 +90,66 @@
         <h3>19 Commands</h3>
         <p>Full CRUD, search, stats, overdue, upcoming, interactive mode, list management, shell completions — everything covered.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="faq-inner">
+    <h2 class="section-title scroll-reveal">Common questions</h2>
+    <div class="faq-list">
+
+      <details class="faq-item scroll-reveal" open>
+        <summary class="faq-question">What is rem?</summary>
+        <div class="faq-answer">
+          <p><strong>rem</strong> is an open-source command-line interface for macOS Reminders. It lets you create, list, update, complete, delete, search, and export reminders directly from your terminal — with sub-200ms response times for all read and write operations.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">How do I install rem?</summary>
+        <div class="faq-answer">
+          <p>The fastest way is the install script:</p>
+          <pre><code>curl -fsSL https://rem.sidv.dev/install | bash</code></pre>
+          <p>Alternatively, if you have Go installed: <code>go install github.com/BRO3886/rem/cmd/rem@latest</code></p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Why is rem faster than AppleScript?</summary>
+        <div class="faq-answer">
+          <p>rem uses <a href="https://github.com/BRO3886/go-eventkit">go-eventkit</a>, which bridges directly to Apple's EventKit framework via cgo and Objective-C — the same API that Reminders.app uses internally. This means direct in-process memory access to the reminder store, with no IPC overhead. AppleScript sends one Apple Event per property per reminder across a process boundary, which adds up to 60+ seconds for a large list. rem does the same operation in 130ms — a 462× speedup.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Does rem work with iCloud Reminders?</summary>
+        <div class="faq-answer">
+          <p>Yes. rem accesses whatever is synced to your local macOS Reminders store — including iCloud lists, local lists, and any other accounts you have configured in Reminders.app. All 19 commands work across all lists regardless of their sync source.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">What macOS versions are supported?</summary>
+        <div class="faq-answer">
+          <p>rem requires macOS 10.12 (Sierra) or later. On macOS 14 (Sonoma) and later, it requests full Reminders access via the modern TCC API. On first run, macOS will prompt you to grant permission in System Settings → Privacy & Security → Reminders.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Can I use rem in scripts and automation?</summary>
+        <div class="faq-answer">
+          <p>Yes. Every command supports <code>-o json</code> for machine-readable output, making rem easy to pipe into other tools like <code>jq</code>. The <code>rem export</code> command produces full JSON or CSV dumps. For Go programs, use <a href="https://github.com/BRO3886/go-eventkit">go-eventkit</a> directly for programmatic EventKit access.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">How do I add rem to an AI coding agent?</summary>
+        <div class="faq-answer">
+          <p>Run <code>rem skills install</code> to copy the embedded agent skill to your agent's skill directory. Supports Claude Code (<code>~/.claude/skills/</code>), Codex CLI (<code>~/.agents/skills/</code>), and OpenClaw (<code>~/.openclaw/skills/</code>). The skill teaches the agent all 19 commands, date formats, and output options.</p>
+        </div>
+      </details>
+
     </div>
   </div>
 </section>

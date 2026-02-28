@@ -1,22 +1,24 @@
-baseURL: "/"
+baseURL: "https://rem.sidv.dev/"
 languageCode: "en-us"
 title: "rem — CLI for macOS Reminders"
 theme: "rem-docs"
 
 params:
-  description: "A fast, powerful command-line interface for macOS Reminders. Built with Go, powered by EventKit. Sub-200ms reads, natural language dates, and a clean public API."
+  description: "rem is a fast command-line interface for macOS Reminders. Built with Go and EventKit via cgo, it reads and writes reminders in under 200ms — faster than any AppleScript or JXA approach. Supports natural language dates, JSON/CSV export, interactive mode, and AI agent skills."
   author: "Siddharth Verma"
   github: "https://github.com/BRO3886/rem"
   ogImage: "/images/og-image.png"
   keywords:
     - macOS Reminders CLI
     - rem CLI
-    - command line reminders
-    - Go CLI tool
-    - EventKit
-    - macOS productivity
-    - reminder management
+    - command line reminders macOS
+    - Go CLI tool macOS
+    - EventKit CLI
     - Apple Reminders terminal
+    - macOS productivity tool
+    - reminder management terminal
+    - rem go-eventkit
+    - macOS reminders command line
 
 markup:
   highlight:
@@ -73,5 +75,12 @@ outputs:
 sitemap:
   changefreq: weekly
   priority: 0.5
+
+frontmatter:
+  lastmod:
+    - lastmod
+    - :git
+    - date
+    - publishDate
 
 enableRobotsTXT: true

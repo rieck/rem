@@ -1,7 +1,17 @@
 ---
 title: "Architecture"
-description: "How rem achieves sub-200ms operations with a single binary — go-eventkit, EventKit, and the design decisions behind them."
+description: "How rem achieves sub-200ms macOS Reminders operations with a single Go binary — using go-eventkit to bridge EventKit via cgo, eliminating AppleScript IPC overhead entirely."
+keywords:
+  - rem architecture
+  - go-eventkit EventKit cgo
+  - macOS Reminders EventKit Go
+  - rem single binary
+  - EventKit via cgo Go
+  - rem AppleScript vs EventKit
 weight: 3
+sitemap:
+  priority: 0.7
+  changefreq: monthly
 ---
 
 ## Overview

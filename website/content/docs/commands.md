@@ -1,7 +1,19 @@
 ---
 title: "Commands"
-description: "Complete reference for all rem CLI commands — create, list, update, delete, search, and more."
+description: "Complete reference for all 19 rem CLI commands: rem add, rem list, rem complete, rem delete, rem update, rem search, rem stats, rem overdue, rem upcoming, rem export, rem import, rem interactive, rem lists, rem list-mgmt, rem flag, rem skills, and more."
+keywords:
+  - rem CLI commands reference
+  - rem add reminder terminal
+  - rem list macOS
+  - rem complete reminder
+  - rem delete reminder
+  - rem search reminders
+  - rem export JSON CSV
+  - rem stats macOS
 weight: 2
+sitemap:
+  priority: 0.9
+  changefreq: weekly
 ---
 
 ## Global flags
