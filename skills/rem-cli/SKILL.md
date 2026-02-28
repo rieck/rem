@@ -14,14 +14,21 @@ A Go CLI that wraps macOS Reminders. Sub-200ms reads via cgo + EventKit. Single 
 ## Installation
 
 ```bash
+# macOS (recommended)
+curl -fsSL https://rem.sidv.dev/install | bash
+
+# Or via Go
 go install github.com/BRO3886/rem/cmd/rem@latest
 ```
 
-Or build from source:
+Install this skill into your agent:
 
 ```bash
-git clone <repo-url> && cd rem
-make build    # produces bin/rem
+# Claude Code or Codex
+rem skills install
+
+# OpenClaw
+rem skills install --agent openclaw
 ```
 
 ## Quick Start

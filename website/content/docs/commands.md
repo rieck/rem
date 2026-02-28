@@ -267,14 +267,15 @@ You can also use `-i` with `add` and `update` for interactive field entry.
 Install the rem agent skill for AI coding agents.
 
 ```bash
-rem skills install                # Interactive picker
-rem skills install --agent claude # Claude Code only
-rem skills install --agent all    # All agents
+rem skills install                         # Interactive picker
+rem skills install --agent claude          # Claude Code only
+rem skills install --agent openclaw        # OpenClaw only
+rem skills install --agent all             # All agents
 ```
 
 | Flag | Description |
 |------|-------------|
-| `--agent` | Target agent: `claude`, `codex`, or `all` (default: interactive picker) |
+| `--agent` | Target agent: `claude`, `codex`, `openclaw`, or `all` (default: interactive picker) |
 
 ### `rem skills uninstall`
 
@@ -286,7 +287,7 @@ rem skills uninstall --agent claude
 
 | Flag | Description |
 |------|-------------|
-| `--agent` | Target agent: `claude`, `codex`, or `all` (default: interactive picker) |
+| `--agent` | Target agent: `claude`, `codex`, `openclaw`, or `all` (default: interactive picker) |
 
 ### `rem skills status`
 

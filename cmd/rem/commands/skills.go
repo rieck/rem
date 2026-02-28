@@ -37,15 +37,16 @@ var skillsInstallCmd = &cobra.Command{
 	Long: `Installs the rem agent skill to the selected AI agent's skill directory.
 
 Supported agents:
-  claude  → ~/.claude/skills/rem-cli/  (Claude Code, Copilot, Cursor, OpenCode, Augment)
-  codex   → ~/.agents/skills/rem-cli/  (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+  claude    → ~/.claude/skills/rem-cli/    (Claude Code, Copilot, Cursor, OpenCode, Augment)
+  codex     → ~/.agents/skills/rem-cli/    (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+  openclaw  → ~/.openclaw/skills/rem-cli/  (OpenClaw)
 
 Without --agent, shows an interactive picker to select which agents to install for.`,
 	RunE: runSkillsInstall,
 }
 
 func init() {
-	skillsInstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, or all")
+	skillsInstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, or all")
 	skillsCmd.AddCommand(skillsInstallCmd)
 }
 
@@ -95,7 +96,7 @@ var skillsUninstallCmd = &cobra.Command{
 }
 
 func init() {
-	skillsUninstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, or all")
+	skillsUninstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, or all")
 	skillsCmd.AddCommand(skillsUninstallCmd)
 }
 
@@ -216,7 +217,7 @@ func resolveAgentFlag(allTargets []skills.AgentTarget, flag string) ([]skills.Ag
 			return []skills.AgentTarget{t}, nil
 		}
 	}
-	return nil, fmt.Errorf("unknown agent %q (valid: claude, codex, all)", flag)
+	return nil, fmt.Errorf("unknown agent %q (valid: claude, codex, openclaw, all)", flag)
 }
 
 func runAgentPicker(allTargets []skills.AgentTarget, homeDir, action string) ([]skills.AgentTarget, error) {

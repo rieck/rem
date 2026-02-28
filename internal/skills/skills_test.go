@@ -3,14 +3,15 @@ package skills
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"testing/fstest"
 )
 
 func TestDefaultTargets(t *testing.T) {
 	targets := DefaultTargets("/home/user")
-	if len(targets) != 2 {
-		t.Fatalf("expected 2 targets, got %d", len(targets))
+	if len(targets) != 3 {
+		t.Fatalf("expected 3 targets, got %d", len(targets))
 	}
 
 	if targets[0].Key != "claude" {
@@ -25,6 +26,16 @@ func TestDefaultTargets(t *testing.T) {
 	}
 	if targets[1].BaseDir != "/home/user/.agents/skills" {
 		t.Errorf("expected codex base dir '/home/user/.agents/skills', got %q", targets[1].BaseDir)
+	}
+
+	if targets[2].Key != "openclaw" {
+		t.Errorf("expected third target key 'openclaw', got %q", targets[2].Key)
+	}
+	if targets[2].Name != "OpenClaw" {
+		t.Errorf("expected third target name 'OpenClaw', got %q", targets[2].Name)
+	}
+	if !strings.Contains(targets[2].BaseDir, ".openclaw/skills") {
+		t.Errorf("expected openclaw base dir to contain '.openclaw/skills', got %q", targets[2].BaseDir)
 	}
 }
 

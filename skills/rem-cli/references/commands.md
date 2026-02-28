@@ -349,19 +349,21 @@ rem completion fish > ~/.config/fish/completions/rem.fish
 Install the rem agent skill for AI coding agents.
 
 ```bash
-rem skills install                # Interactive picker
-rem skills install --agent claude # Install for Claude Code only
-rem skills install --agent codex  # Install for Codex CLI only
-rem skills install --agent all    # Install for all agents
+rem skills install                          # Interactive picker
+rem skills install --agent claude           # Install for Claude Code only
+rem skills install --agent codex            # Install for Codex CLI only
+rem skills install --agent openclaw         # Install for OpenClaw only
+rem skills install --agent all              # Install for all agents
 ```
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--agent` | Agent target: claude, codex, or all | Interactive picker |
+| `--agent` | Agent target: claude, codex, openclaw, or all | Interactive picker |
 
 Supported targets:
-- `claude` → `~/.claude/skills/rem-cli/` (Claude Code, Copilot, Cursor, OpenCode, Augment)
-- `codex` → `~/.agents/skills/rem-cli/` (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+- `claude`   → `~/.claude/skills/rem-cli/`    (Claude Code, Copilot, Cursor, OpenCode, Augment)
+- `codex`    → `~/.agents/skills/rem-cli/`    (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+- `openclaw` → `~/.openclaw/skills/rem-cli/`  (OpenClaw)
 
 ---
 
@@ -370,14 +372,15 @@ Supported targets:
 Remove the rem agent skill from AI coding agents.
 
 ```bash
-rem skills uninstall                # Interactive picker
-rem skills uninstall --agent claude # Uninstall from Claude Code only
-rem skills uninstall --agent all    # Uninstall from all agents
+rem skills uninstall                          # Interactive picker
+rem skills uninstall --agent claude           # Uninstall from Claude Code only
+rem skills uninstall --agent openclaw         # Uninstall from OpenClaw only
+rem skills uninstall --agent all              # Uninstall from all agents
 ```
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--agent` | Agent target: claude, codex, or all | Interactive picker |
+| `--agent` | Agent target: claude, codex, openclaw, or all | Interactive picker |
 
 ---
 
