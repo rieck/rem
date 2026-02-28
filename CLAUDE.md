@@ -44,9 +44,17 @@ make completions  # bash/zsh/fish
 ```
 
 ## Releasing
-- **CRITICAL: Tag BEFORE building.** The Makefile uses `git describe --tags` to embed the version. If you `make release` before `git tag`, the binary will have the wrong version (e.g., `v0.5.0-2-gae75da9` instead of `v0.6.0`). Always: tag → push tag → `make release` → verify with `./rem version` → upload.
-- **Always use `make release`** to build release binaries — produces a `.tar.gz` that preserves execute permissions (HTTP downloads strip +x from raw binaries)
-- Upload `bin/rem-darwin-arm64.tar.gz` to GitHub Releases
+Release steps in order — do not skip or reorder:
+1. `git push` — push all commits to main **first**. Never tag unpushed commits.
+2. `git tag vX.Y.Z` — tag after push so the tag points to a commit already on remote main
+3. `git push origin vX.Y.Z` — push the tag explicitly
+4. `make release` — builds `bin/rem-darwin-arm64.tar.gz` with correct version embedded via `git describe --tags`
+5. Verify: `./bin/rem version` must show `vX.Y.Z` (not a dirty describe like `v0.5.0-2-gae75da9`)
+6. `gh release create vX.Y.Z bin/rem-darwin-arm64.tar.gz`
+
+- **CRITICAL: Push before tag.** Tagging an unpushed commit then running `gh release create` pushes the tag + that commit but leaves `main` behind on remote — release binary is built from code not reachable from main.
+- **CRITICAL: Tag before build.** `make release` uses `git describe --tags` to embed the version. Tag first or the binary gets a dirty version string.
+- **Always use `make release`** — produces a `.tar.gz` that preserves execute permissions (HTTP downloads strip +x from raw binaries)
 - No CI release workflow — macOS runners are too expensive for free tier
 
 ## Agent Skills
