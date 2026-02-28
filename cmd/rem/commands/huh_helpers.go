@@ -41,7 +41,7 @@ func reminderLabel(r *reminder.Reminder) string {
 	label := fmt.Sprintf("%s [%s]", title, r.ListName)
 
 	if r.DueDate != nil {
-		label += fmt.Sprintf(" (due: %s)", r.DueDate.Format("Jan 02, 15:04"))
+		label += fmt.Sprintf(" (due: %s)", r.DueDate.Local().Format("Jan 02, 15:04"))
 	}
 
 	if r.Flagged {

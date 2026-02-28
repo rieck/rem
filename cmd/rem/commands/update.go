@@ -159,7 +159,7 @@ func runUpdateInteractive(idArg string) error {
 	url := r.URL
 	dueStr := ""
 	if r.DueDate != nil {
-		dueStr = r.DueDate.Format("Jan 02, 2006 3:04 PM")
+		dueStr = r.DueDate.Local().Format("Jan 02, 2006 3:04 PM")
 	}
 	priorityStr := r.Priority.String()
 	flaggedStr := "no"
@@ -193,7 +193,7 @@ func runUpdateInteractive(idArg string) error {
 
 	dueDescription := "e.g., 'tomorrow', 'next friday at 2pm', 'none' to clear"
 	if r.DueDate != nil {
-		dueDescription = fmt.Sprintf("Current: %s — enter new date, 'none' to clear, or leave as-is", r.DueDate.Format("Jan 02, 2006 3:04 PM"))
+		dueDescription = fmt.Sprintf("Current: %s — enter new date, 'none' to clear, or leave as-is", r.DueDate.Local().Format("Jan 02, 2006 3:04 PM"))
 	}
 
 	form := huh.NewForm(
@@ -273,7 +273,7 @@ func runUpdateInteractive(idArg string) error {
 	newFlagged := flaggedStr == "yes"
 	origDueStr := ""
 	if r.DueDate != nil {
-		origDueStr = r.DueDate.Format("Jan 02, 2006 3:04 PM")
+		origDueStr = r.DueDate.Local().Format("Jan 02, 2006 3:04 PM")
 	}
 	if dueStr != origDueStr {
 		if dueStr == "" || dueStr == "none" {

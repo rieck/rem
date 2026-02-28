@@ -114,7 +114,7 @@ func printRemindersTable(w io.Writer, reminders []*reminder.Reminder) {
 		id := shortID(r.ID)
 		dueStr := ""
 		if r.DueDate != nil {
-			dueStr = r.DueDate.Format("Jan 02, 15:04")
+			dueStr = r.DueDate.Local().Format("Jan 02, 15:04")
 		}
 		priority := r.Priority.String()
 		status := statusString(r)
@@ -129,7 +129,7 @@ func printRemindersPlain(w io.Writer, reminders []*reminder.Reminder) {
 	for _, r := range reminders {
 		dueStr := ""
 		if r.DueDate != nil {
-			dueStr = " (due: " + r.DueDate.Format("2006-01-02 15:04") + ")"
+			dueStr = " (due: " + r.DueDate.Local().Format("2006-01-02 15:04") + ")"
 		}
 		statusMark := "[ ]"
 		if r.Completed {
@@ -161,10 +161,10 @@ func printReminderRichDetail(w io.Writer, r *reminder.Reminder) {
 		fmt.Fprintf(w, "%s %s\n", bold("URL:"), cyan(r.URL))
 	}
 	if r.DueDate != nil {
-		fmt.Fprintf(w, "%s %s\n", bold("Due:"), r.DueDate.Format("Mon Jan 02, 2006 at 3:04 PM"))
+		fmt.Fprintf(w, "%s %s\n", bold("Due:"), r.DueDate.Local().Format("Mon Jan 02, 2006 at 3:04 PM"))
 	}
 	if r.RemindMeDate != nil {
-		fmt.Fprintf(w, "%s %s\n", bold("Remind:"), r.RemindMeDate.Format("Mon Jan 02, 2006 at 3:04 PM"))
+		fmt.Fprintf(w, "%s %s\n", bold("Remind:"), r.RemindMeDate.Local().Format("Mon Jan 02, 2006 at 3:04 PM"))
 	}
 
 	priorityStr := r.Priority.String()
@@ -189,10 +189,10 @@ func printReminderRichDetail(w io.Writer, r *reminder.Reminder) {
 	}
 
 	if r.CreationDate != nil {
-		fmt.Fprintf(w, "%s %s\n", bold("Created:"), r.CreationDate.Format("Mon Jan 02, 2006 at 3:04 PM"))
+		fmt.Fprintf(w, "%s %s\n", bold("Created:"), r.CreationDate.Local().Format("Mon Jan 02, 2006 at 3:04 PM"))
 	}
 	if r.ModificationDate != nil {
-		fmt.Fprintf(w, "%s %s\n", bold("Modified:"), r.ModificationDate.Format("Mon Jan 02, 2006 at 3:04 PM"))
+		fmt.Fprintf(w, "%s %s\n", bold("Modified:"), r.ModificationDate.Local().Format("Mon Jan 02, 2006 at 3:04 PM"))
 	}
 }
 
@@ -207,7 +207,7 @@ func printReminderPlainDetail(w io.Writer, r *reminder.Reminder) {
 		fmt.Fprintf(w, "URL: %s\n", r.URL)
 	}
 	if r.DueDate != nil {
-		fmt.Fprintf(w, "Due: %s\n", r.DueDate.Format("2006-01-02 15:04"))
+		fmt.Fprintf(w, "Due: %s\n", r.DueDate.Local().Format("2006-01-02 15:04"))
 	}
 	fmt.Fprintf(w, "Priority: %s\n", r.Priority.String())
 	if r.Completed {

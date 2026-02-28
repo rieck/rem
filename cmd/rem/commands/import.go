@@ -49,7 +49,7 @@ var importCmd = &cobra.Command{
 					if importDryRun {
 						dueStr := ""
 						if r.DueDate != nil {
-							dueStr = " (due: " + r.DueDate.Format("2006-01-02 15:04") + ")"
+							dueStr = " (due: " + r.DueDate.Local().Format("2006-01-02 15:04") + ")"
 						}
 						fmt.Printf("[dry-run] Would create: %s%s [%s]\n", r.Name, dueStr, r.ListName)
 						continue
@@ -76,7 +76,7 @@ var importCmd = &cobra.Command{
 					if importDryRun {
 						dueStr := ""
 						if r.DueDate != nil {
-							dueStr = " (due: " + r.DueDate.Format("2006-01-02 15:04") + ")"
+							dueStr = " (due: " + r.DueDate.Local().Format("2006-01-02 15:04") + ")"
 						}
 						fmt.Printf("[dry-run] Would create: %s%s [%s]\n", r.Name, dueStr, r.ListName)
 						continue

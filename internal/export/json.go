@@ -33,7 +33,7 @@ func formatTimePtr(t *time.Time) *string {
 	if t == nil {
 		return nil
 	}
-	s := t.Format(timeFormat)
+	s := t.Local().Format(timeFormat)
 	return &s
 }
 

@@ -28,11 +28,11 @@ func ExportCSV(w io.Writer, reminders []*reminder.Reminder) error {
 	for _, r := range reminders {
 		dueDate := ""
 		if r.DueDate != nil {
-			dueDate = r.DueDate.Format(timeFormat)
+			dueDate = r.DueDate.Local().Format(timeFormat)
 		}
 		remindDate := ""
 		if r.RemindMeDate != nil {
-			remindDate = r.RemindMeDate.Format(timeFormat)
+			remindDate = r.RemindMeDate.Local().Format(timeFormat)
 		}
 
 		record := []string{
