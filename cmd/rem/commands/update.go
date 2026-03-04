@@ -16,6 +16,7 @@ var (
 	updatePriority    string
 	updateURL         string
 	updateFlagged     string
+	updateList        string
 	updateInteractive bool
 )
 
@@ -27,6 +28,7 @@ var updateCmd = &cobra.Command{
 	Example: `  rem update abc12345 --due "next monday"
   rem update abc12345 --notes "Updated notes" --priority medium
   rem edit abc12345 --name "New title"
+  rem update abc12345 --list "Work"
   rem update -i
   rem update -i abc12345`,
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -88,6 +90,9 @@ var updateCmd = &cobra.Command{
 		if cmd.Flags().Changed("flagged") {
 			updates["flagged"] = updateFlagged == "true" || updateFlagged == "yes"
 		}
+		if cmd.Flags().Changed("list") {
+			updates["list"] = updateList
+		}
 
 		if len(updates) == 0 {
 			return fmt.Errorf("no updates specified")
@@ -110,6 +115,7 @@ func init() {
 	updateCmd.Flags().StringVarP(&updatePriority, "priority", "p", "", "New priority: high, medium, low, none")
 	updateCmd.Flags().StringVarP(&updateURL, "url", "u", "", "New URL")
 	updateCmd.Flags().StringVar(&updateFlagged, "flagged", "", "Set flagged status: true/false")
+	updateCmd.Flags().StringVarP(&updateList, "list", "l", "", "Move reminder to a different list")
 	updateCmd.Flags().BoolVarP(&updateInteractive, "interactive", "i", false, "Update interactively")
 
 	rootCmd.AddCommand(updateCmd)

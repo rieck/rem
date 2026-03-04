@@ -206,6 +206,9 @@ func (s *ReminderService) UpdateReminder(id string, updates map[string]any) erro
 		case "url":
 			v := value.(string)
 			input.URL = &v
+		case "list":
+			v := value.(string)
+			input.ListName = &v
 		}
 	}
 
@@ -213,7 +216,7 @@ func (s *ReminderService) UpdateReminder(id string, updates map[string]any) erro
 	hasEventKitUpdates := input.Title != nil || input.Notes != nil ||
 		input.DueDate != nil || input.ClearDueDate ||
 		input.RemindMeDate != nil || input.Priority != nil ||
-		input.Completed != nil || input.URL != nil
+		input.Completed != nil || input.URL != nil || input.ListName != nil
 
 	if hasEventKitUpdates {
 		if _, err := s.client.UpdateReminder(id, input); err != nil {
