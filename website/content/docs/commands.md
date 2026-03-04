@@ -93,6 +93,7 @@ rem update 6ECE --priority medium --due "next friday"
 | Flag | Description |
 |------|-------------|
 | `--name` | New title |
+| `-l, --list` | Move reminder to a different list |
 | `-d, --due` | New due date |
 | `-p, --priority` | New priority |
 | `-n, --notes` | New notes |

@@ -81,12 +81,14 @@ rem update abc12345 --notes "Updated notes" --priority medium
 rem update abc12345 --name "New title"
 rem update abc12345 --due none    # Clear due date
 rem update abc12345 --flagged true
+rem update abc12345 --list "Work"  # Move to a different list
 rem update abc12345 -i            # Interactive mode
 ```
 
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--name` | — | New title | — |
+| `--list` | `-l` | Move reminder to a different list | — |
 | `--due` | `-d` | New due date (use `none` to clear) | — |
 | `--notes` | `-n` | New notes/body | — |
 | `--priority` | `-p` | New priority: high, medium, low, none | — |
