@@ -17,7 +17,7 @@ var todayCmd = &cobra.Command{
   rem today --output json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		now := time.Now()
-		endOfToday := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+		endOfToday := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 		completed := false
 		filter := &reminder.ListFilter{
 			Completed: &completed,
