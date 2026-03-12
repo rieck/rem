@@ -20,6 +20,7 @@ var todayCmd = &cobra.Command{
 		endOfToday := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 		completed := false
 		filter := &reminder.ListFilter{
+			ListName:  todayList,
 			Completed: &completed,
 			DueBefore: &endOfToday,
 		}
@@ -35,6 +36,9 @@ var todayCmd = &cobra.Command{
 	},
 }
 
+var todayList string
+
 func init() {
+	todayCmd.Flags().StringVarP(&todayList, "list", "l", "", "Filter by list name")
 	rootCmd.AddCommand(todayCmd)
 }
