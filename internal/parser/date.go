@@ -210,6 +210,11 @@ func parseNaturalDate(input string, now time.Time) (time.Time, error) {
 
 	baseDate := time.Date(year, month, day, 0, 0, 0, 0, now.Location())
 
+	// Go's time.Date normalizes overflow (e.g. Feb 31 → Mar 3). Catch that.
+	if baseDate.Month() != month || baseDate.Day() != day {
+		return time.Time{}, fmt.Errorf("invalid date: %s %d", month, day)
+	}
+
 	// Parse optional time component
 	if len(timeParts) > 0 {
 		timeStr := strings.Join(timeParts, " ")

@@ -209,9 +209,38 @@ func TestParseDateNaturalFormats(t *testing.T) {
 			return t.Year() == 2026 && t.Month() == 3 && t.Day() == 21 && t.Hour() == 14 && t.Minute() == 30
 		}, "ISO date + 2:30pm"},
 
+		// Single-digit day
+		{"5 mar", false, func(t time.Time) bool {
+			return t.Month() == 3 && t.Day() == 5 && t.Hour() == 9
+		}, "5 mar (single digit day)"},
+		{"mar 5", false, func(t time.Time) bool {
+			return t.Month() == 3 && t.Day() == 5 && t.Hour() == 9
+		}, "mar 5 (single digit month-first)"},
+
+		// Day boundaries
+		{"1 jan", false, func(t time.Time) bool {
+			return t.Month() == 1 && t.Day() == 1
+		}, "1 jan (min day)"},
+		{"31 jan", false, func(t time.Time) bool {
+			return t.Month() == 1 && t.Day() == 31
+		}, "31 jan (max day)"},
+
+		// 24h time with natural date
+		{"21 mar 14:30", false, func(t time.Time) bool {
+			return t.Month() == 3 && t.Day() == 21 && t.Hour() == 14 && t.Minute() == 30
+		}, "21 mar 14:30 (24h time)"},
+
+		// Invalid month-day combos (Go time.Date overflow)
+		{"feb 30", true, nil, "feb 30 (invalid)"},
+		{"feb 31", true, nil, "feb 31 (invalid)"},
+		{"apr 31", true, nil, "apr 31 (invalid)"},
+		{"feb 29 2026", true, nil, "feb 29 non-leap year"},
+
 		// Edge cases
 		{"not a date", true, nil, "invalid input"},
 		{"32 Mar", true, nil, "invalid day"},
+		{"0 mar", true, nil, "day zero"},
+		{"march", true, nil, "month name alone"},
 	}
 
 	for _, tt := range tests {
