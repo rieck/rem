@@ -7,8 +7,6 @@ import (
 
 	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/BRO3886/rem/internal/ui"
-	"github.com/olekukonko/tablewriter"
-	"github.com/olekukonko/tablewriter/tw"
 	"github.com/spf13/cobra"
 )
 
@@ -78,15 +76,7 @@ var statsCmd = &cobra.Command{
 
 		if len(lists) > 0 {
 			fmt.Println("\nPer List:")
-			table := tablewriter.NewTable(os.Stdout,
-				tablewriter.WithHeaderAlignment(tw.AlignLeft),
-				tablewriter.WithRowAlignment(tw.AlignLeft),
-			)
-			table.Header("List", "Reminders")
-			for _, l := range lists {
-				table.Append([]string{l.Name, fmt.Sprintf("%d", l.Count)})
-			}
-			table.Render()
+			ui.PrintLists(os.Stdout, lists, ui.FormatTable, true)
 		}
 
 		return nil
