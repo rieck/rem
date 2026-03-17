@@ -35,6 +35,11 @@ func ParseDate(input string) (time.Time, error) {
 		return todayAt(now.AddDate(0, 0, -1), 9, 0), nil
 	}
 
+	// Handle natural date formats without year: "21 Mar 2pm", "Mar 21", "march 21 at 2pm"
+	if t, err := parseNaturalDate(lower, now); err == nil {
+		return t, nil
+	}
+
 	// Handle "in X hours/minutes/days/weeks"
 	if t, err := parseRelative(lower, now); err == nil {
 		return t, nil
@@ -80,6 +85,8 @@ func tryStandardFormats(input string) (time.Time, error) {
 		"2006-01-02 15:04",
 		"2006-01-02 3:04PM",
 		"2006-01-02 3:04pm",
+		"2006-01-02 3PM",
+		"2006-01-02 3pm",
 		"2006-01-02T15:04:05",
 		"2006-01-02T15:04",
 		"01/02/2006",
@@ -93,6 +100,23 @@ func tryStandardFormats(input string) (time.Time, error) {
 		"January 2, 2006 15:04",
 		"2 Jan 2006",
 		"02 Jan 2006",
+		"2 Jan 2006 3:04PM",
+		"2 Jan 2006 3:04pm",
+		"2 Jan 2006 3PM",
+		"2 Jan 2006 3pm",
+		"2 Jan 2006 15:04",
+		"02 Jan 2006 3:04PM",
+		"02 Jan 2006 3:04pm",
+		"02 Jan 2006 3PM",
+		"02 Jan 2006 3pm",
+		"02 Jan 2006 15:04",
+		"2 January 2006",
+		"02 January 2006",
+		"2 January 2006 3:04PM",
+		"2 January 2006 3:04pm",
+		"2 January 2006 3PM",
+		"2 January 2006 3pm",
+		"2 January 2006 15:04",
 	}
 
 	for _, f := range formats {
@@ -103,6 +127,101 @@ func tryStandardFormats(input string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("no standard format matched")
+}
+
+var months = map[string]time.Month{
+	"january": time.January, "jan": time.January,
+	"february": time.February, "feb": time.February,
+	"march": time.March, "mar": time.March,
+	"april": time.April, "apr": time.April,
+	"may": time.May,
+	"june": time.June, "jun": time.June,
+	"july": time.July, "jul": time.July,
+	"august": time.August, "aug": time.August,
+	"september": time.September, "sep": time.September,
+	"october": time.October, "oct": time.October,
+	"november": time.November, "nov": time.November,
+	"december": time.December, "dec": time.December,
+}
+
+// parseNaturalDate handles formats like:
+//   - "21 Mar", "21 Mar 2pm", "21 Mar 2:30pm"
+//   - "Mar 21", "Mar 21 2pm", "march 21 at 2pm"
+//   - "21 March 2026"
+func parseNaturalDate(input string, now time.Time) (time.Time, error) {
+	// Normalize "at" out of the string: "march 21 at 2pm" → "march 21 2pm"
+	normalized := strings.ReplaceAll(input, " at ", " ")
+	parts := strings.Fields(normalized)
+	if len(parts) < 2 {
+		return time.Time{}, fmt.Errorf("not a natural date")
+	}
+
+	var day int
+	var month time.Month
+	var year int
+	var timeParts []string
+	var found bool
+
+	// Try "21 Mar ..." (day first)
+	if d, err := strconv.Atoi(parts[0]); err == nil && d >= 1 && d <= 31 {
+		if m, ok := months[parts[1]]; ok {
+			day = d
+			month = m
+			found = true
+			rest := parts[2:]
+			// Check if next part is a year
+			if len(rest) > 0 {
+				if y, err := strconv.Atoi(rest[0]); err == nil && y >= 1000 && y <= 9999 {
+					year = y
+					rest = rest[1:]
+				}
+			}
+			timeParts = rest
+		}
+	}
+
+	// Try "Mar 21 ..." (month first)
+	if !found {
+		if m, ok := months[parts[0]]; ok {
+			if d, err := strconv.Atoi(parts[1]); err == nil && d >= 1 && d <= 31 {
+				day = d
+				month = m
+				found = true
+				rest := parts[2:]
+				// Check if next part is a year
+				if len(rest) > 0 {
+					if y, err := strconv.Atoi(rest[0]); err == nil && y >= 1000 && y <= 9999 {
+						year = y
+						rest = rest[1:]
+					}
+				}
+				timeParts = rest
+			}
+		}
+	}
+
+	if !found {
+		return time.Time{}, fmt.Errorf("not a natural date")
+	}
+
+	if year == 0 {
+		year = now.Year()
+	}
+
+	baseDate := time.Date(year, month, day, 0, 0, 0, 0, now.Location())
+
+	// Parse optional time component
+	if len(timeParts) > 0 {
+		timeStr := strings.Join(timeParts, " ")
+		hour, min, err := parseTimeStr(timeStr)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("unable to parse time in date: %q", timeStr)
+		}
+		return todayAt(baseDate, hour, min), nil
+	}
+
+	// No time specified — default to 9 AM
+	return todayAt(baseDate, 9, 0), nil
 }
 
 var relativePattern = regexp.MustCompile(`^in\s+(\d+)\s+(minute|minutes|min|mins|hour|hours|hr|hrs|day|days|week|weeks|month|months)$`)
