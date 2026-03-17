@@ -7,8 +7,6 @@ import (
 
 	"github.com/BRO3886/rem/internal/reminder"
 	"github.com/BRO3886/rem/internal/ui"
-	"github.com/olekukonko/tablewriter"
-	"github.com/olekukonko/tablewriter/tw"
 	"github.com/spf13/cobra"
 )
 
@@ -78,15 +76,7 @@ var statsCmd = &cobra.Command{
 
 		if len(lists) > 0 {
 			fmt.Println("\nPer List:")
-			table := tablewriter.NewTable(os.Stdout,
-				tablewriter.WithHeaderAlignment(tw.AlignLeft),
-				tablewriter.WithRowAlignment(tw.AlignLeft),
-			)
-			table.Header("List", "Reminders")
-			for _, l := range lists {
-				table.Append([]string{l.Name, fmt.Sprintf("%d", l.Count)})
-			}
-			table.Render()
+			ui.PrintLists(os.Stdout, lists, ui.FormatTable, true)
 		}
 
 		return nil
@@ -99,6 +89,7 @@ var overdueCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		incomplete := false
 		reminders, err := reminderSvc.ListReminders(&reminder.ListFilter{
+			ListName:  overdueList,
 			Completed: &incomplete,
 		})
 		if err != nil {
@@ -128,7 +119,9 @@ var overdueCmd = &cobra.Command{
 	},
 }
 
+var overdueList string
 var upcomingDays int
+var upcomingList string
 
 var upcomingCmd = &cobra.Command{
 	Use:   "upcoming",
@@ -138,6 +131,7 @@ var upcomingCmd = &cobra.Command{
 		now := time.Now()
 		cutoff := now.AddDate(0, 0, upcomingDays)
 		reminders, err := reminderSvc.ListReminders(&reminder.ListFilter{
+			ListName:  upcomingList,
 			Completed: &incomplete,
 			DueBefore: &cutoff,
 			DueAfter:  &now,
@@ -162,7 +156,9 @@ var upcomingCmd = &cobra.Command{
 }
 
 func init() {
+	overdueCmd.Flags().StringVarP(&overdueList, "list", "l", "", "Filter by list name")
 	upcomingCmd.Flags().IntVar(&upcomingDays, "days", 7, "Number of days to look ahead")
+	upcomingCmd.Flags().StringVarP(&upcomingList, "list", "l", "", "Filter by list name")
 	rootCmd.AddCommand(statsCmd)
 	rootCmd.AddCommand(overdueCmd)
 	rootCmd.AddCommand(upcomingCmd)

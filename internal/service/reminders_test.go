@@ -109,6 +109,118 @@ func TestFromEventKitReminderNilDates(t *testing.T) {
 	}
 }
 
+func timePtr(t time.Time) *time.Time { return &t }
+
+func TestSortReminders(t *testing.T) {
+	now := time.Now()
+	earlier := now.Add(-2 * time.Hour)
+	later := now.Add(2 * time.Hour)
+
+	tests := []struct {
+		name     string
+		input    []*reminder.Reminder
+		wantOrder []string // expected Name order after sort
+	}{
+		{
+			name: "sort by due date ascending",
+			input: []*reminder.Reminder{
+				{Name: "later", DueDate: timePtr(later)},
+				{Name: "earlier", DueDate: timePtr(earlier)},
+				{Name: "now", DueDate: timePtr(now)},
+			},
+			wantOrder: []string{"earlier", "now", "later"},
+		},
+		{
+			name: "nil due dates sort last",
+			input: []*reminder.Reminder{
+				{Name: "no-due", DueDate: nil},
+				{Name: "has-due", DueDate: timePtr(now)},
+			},
+			wantOrder: []string{"has-due", "no-due"},
+		},
+		{
+			name: "both nil due dates - priority tiebreaker",
+			input: []*reminder.Reminder{
+				{Name: "low", DueDate: nil, Priority: reminder.PriorityLow},
+				{Name: "high", DueDate: nil, Priority: reminder.PriorityHigh},
+			},
+			wantOrder: []string{"high", "low"},
+		},
+		{
+			name: "same due date - priority tiebreaker",
+			input: []*reminder.Reminder{
+				{Name: "medium", DueDate: timePtr(now), Priority: reminder.PriorityMedium},
+				{Name: "high", DueDate: timePtr(now), Priority: reminder.PriorityHigh},
+				{Name: "low", DueDate: timePtr(now), Priority: reminder.PriorityLow},
+			},
+			wantOrder: []string{"high", "medium", "low"},
+		},
+		{
+			name: "priority none sorts last in tiebreaker",
+			input: []*reminder.Reminder{
+				{Name: "none", DueDate: timePtr(now), Priority: reminder.PriorityNone},
+				{Name: "low", DueDate: timePtr(now), Priority: reminder.PriorityLow},
+			},
+			wantOrder: []string{"low", "none"},
+		},
+		{
+			name: "both nil due and both priority none - stable",
+			input: []*reminder.Reminder{
+				{Name: "a", DueDate: nil, Priority: reminder.PriorityNone},
+				{Name: "b", DueDate: nil, Priority: reminder.PriorityNone},
+			},
+			wantOrder: []string{"a", "b"},
+		},
+		{
+			name: "empty slice",
+			input: []*reminder.Reminder{},
+			wantOrder: []string{},
+		},
+		{
+			name: "single element",
+			input: []*reminder.Reminder{
+				{Name: "only"},
+			},
+			wantOrder: []string{"only"},
+		},
+		{
+			name: "already sorted",
+			input: []*reminder.Reminder{
+				{Name: "first", DueDate: timePtr(earlier), Priority: reminder.PriorityHigh},
+				{Name: "second", DueDate: timePtr(now), Priority: reminder.PriorityMedium},
+				{Name: "third", DueDate: timePtr(later), Priority: reminder.PriorityLow},
+			},
+			wantOrder: []string{"first", "second", "third"},
+		},
+		{
+			name: "mixed nil and non-nil with priorities",
+			input: []*reminder.Reminder{
+				{Name: "nil-none", DueDate: nil, Priority: reminder.PriorityNone},
+				{Name: "later-high", DueDate: timePtr(later), Priority: reminder.PriorityHigh},
+				{Name: "nil-high", DueDate: nil, Priority: reminder.PriorityHigh},
+				{Name: "earlier-low", DueDate: timePtr(earlier), Priority: reminder.PriorityLow},
+				{Name: "earlier-high", DueDate: timePtr(earlier), Priority: reminder.PriorityHigh},
+			},
+			wantOrder: []string{"earlier-high", "earlier-low", "later-high", "nil-high", "nil-none"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sortReminders(tt.input)
+			for i, r := range tt.input {
+				if i >= len(tt.wantOrder) {
+					t.Errorf("unexpected extra element at index %d: %s", i, r.Name)
+					continue
+				}
+				if r.Name != tt.wantOrder[i] {
+					t.Errorf("index %d: got %q, want %q", i, r.Name, tt.wantOrder[i])
+				}
+			}
+		})
+	}
+}
+
 func TestFromEventKitReminderPriorityMapping(t *testing.T) {
 	tests := []struct {
 		name     string

@@ -9,6 +9,7 @@ import (
 
 	"github.com/BRO3886/rem/internal/export"
 	"github.com/BRO3886/rem/internal/reminder"
+	"github.com/charmbracelet/x/term"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
@@ -87,8 +88,16 @@ func PrintLists(w io.Writer, lists []*reminder.List, format OutputFormat, showCo
 	}
 }
 
+func terminalWidth() int {
+	w, _, err := term.GetSize(os.Stdout.Fd())
+	if err != nil || w <= 0 {
+		return 0
+	}
+	return w
+}
+
 func newTable(w io.Writer) *tablewriter.Table {
-	return tablewriter.NewTable(w,
+	opts := []tablewriter.Option{
 		tablewriter.WithHeaderAlignment(tw.AlignLeft),
 		tablewriter.WithRowAlignment(tw.AlignLeft),
 		tablewriter.WithRendition(tw.Rendition{
@@ -98,7 +107,11 @@ func newTable(w io.Writer) *tablewriter.Table {
 				},
 			},
 		}),
-	)
+	}
+	if width := terminalWidth(); width > 0 {
+		opts = append(opts, tablewriter.WithMaxWidth(width))
+	}
+	return tablewriter.NewTable(w, opts...)
 }
 
 func printRemindersTable(w io.Writer, reminders []*reminder.Reminder) {
