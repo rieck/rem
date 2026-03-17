@@ -5,6 +5,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -121,7 +122,38 @@ func (s *ReminderService) ListReminders(filter *reminder.ListFilter) ([]*reminde
 		result = append(result, r)
 	}
 
+	sortReminders(result)
+
 	return result, nil
+}
+
+// sortReminders sorts by due date ascending (nil last), then priority (higher first, none last).
+func sortReminders(result []*reminder.Reminder) {
+	sort.SliceStable(result, func(i, j int) bool {
+		ri, rj := result[i], result[j]
+
+		switch {
+		case ri.DueDate == nil && rj.DueDate == nil:
+			// fall through to priority
+		case ri.DueDate == nil:
+			return false
+		case rj.DueDate == nil:
+			return true
+		default:
+			if !ri.DueDate.Equal(*rj.DueDate) {
+				return ri.DueDate.Before(*rj.DueDate)
+			}
+		}
+
+		// Priority 0 (none) sorts last; otherwise lower value = higher priority
+		if ri.Priority == reminder.PriorityNone {
+			return false
+		}
+		if rj.Priority == reminder.PriorityNone {
+			return true
+		}
+		return ri.Priority < rj.Priority
+	})
 }
 
 // fetchFlaggedIDs uses JXA to get the set of flagged reminder IDs.
